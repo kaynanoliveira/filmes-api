@@ -13,5 +13,5 @@ public class Filme {
     private Long id;
     private String nomeFilme;
     private String genero;
-    private int ano;
+    private Integer ano;
 }

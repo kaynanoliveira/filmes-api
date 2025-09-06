@@ -17,17 +17,20 @@ public class FilmeController {
     private static final Map<Long, Filme> filmes = new HashMap<>();
     private static final AtomicLong idFilme = new AtomicLong();
 
-    static {
-        long id1 = idFilme.incrementAndGet();
-        filmes.put(id1, new Filme(id1, "Vingadores Guerra Infinita", "Ficção Científica", 2018));
-
-        long id2 = idFilme.incrementAndGet();
-        filmes.put(id2, new Filme(id2, "Star Wars", "Ficção Científica", 2015));
+    @GetMapping
+    public ResponseEntity<Collection<Filme>> listarTodos() {
+        return ResponseEntity.ok(filmes.values());
     }
 
-    @GetMapping
-    public Collection<Filme> listarTodos() {
-        return filmes.values();
+    @GetMapping("/{id}")
+    public ResponseEntity<Filme> buscarFilmePorId(@PathVariable Long id) {
+        Filme filme = filmes.get(id);
+
+        if (filme != null) {
+            return ResponseEntity.ok(filme);
+        } else {
+            return ResponseEntity.notFound().build();
+        }
     }
 
     @PostMapping
@@ -39,9 +42,42 @@ public class FilmeController {
         return novoFilme;
     }
 
+    @PutMapping("/{id}")
+    public ResponseEntity<Filme> atualizarFilme(@PathVariable Long id, @RequestBody Filme filmeAtualizado) {
+        if (!filmes.containsKey(id)) {
+            return ResponseEntity.notFound().build();
+        }
+        filmeAtualizado.setId(id);
+        filmes.put(id, filmeAtualizado);  // Atualiza o filme
+        return ResponseEntity.ok().build();
+    }
+
+    @PatchMapping("/{id}")
+    public ResponseEntity<Filme> atualizarParcialmenteFilme(@PathVariable Long id, @RequestBody Filme filmeAtualizado) {
+        Filme filmeExistente = filmes.get(id);
+        if (filmeExistente == null) {
+            return ResponseEntity.notFound().build();
+        }
+
+        if (filmeAtualizado.getNomeFilme() != null) {
+            filmeExistente.setNomeFilme(filmeAtualizado.getNomeFilme());
+        }
+
+        if (filmeAtualizado.getGenero() != null) {
+            filmeExistente.setGenero(filmeAtualizado.getGenero());
+        }
+
+        if (filmeAtualizado.getAno() != null) {
+            filmeExistente.setAno(filmeAtualizado.getAno());
+        }
+
+        filmes.put(id, filmeExistente);
+        return ResponseEntity.ok().build();
+    }
+
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> removerFilme(@PathVariable Long id) {
-        if(!filmes.containsKey(id)){
+        if (!filmes.containsKey(id)) {
             return ResponseEntity.notFound().build();
         }
         filmes.remove(id);
